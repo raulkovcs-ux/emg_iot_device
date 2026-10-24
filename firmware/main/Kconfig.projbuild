@@ -1,0 +1,30 @@
+menu "FAMA-Band"
+    config FAMA_LINK_BLE
+        bool "Use BLE instead of Wi-Fi UDP for the live link"
+        default n
+        select BT_ENABLED
+        help
+            Also enable the NimBLE host (Component config > Bluetooth > Host > NimBLE);
+            sdkconfig.ble does both: idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.ble" build
+    config FAMA_WIFI_SSID
+        string "Wi-Fi SSID (lab network)"
+        default "famaband-lab"
+        depends on !FAMA_LINK_BLE
+    config FAMA_WIFI_PASSWORD
+        string "Wi-Fi password"
+        default "change-me"
+        depends on !FAMA_LINK_BLE
+    choice FAMA_AFE_INPUT
+        prompt "ADS1298 input (bring-up tests)"
+        default FAMA_AFE_INPUT_NORMAL
+        config FAMA_AFE_INPUT_NORMAL
+            bool "Electrodes (normal use)"
+        config FAMA_AFE_INPUT_SHORTED
+            bool "Inputs shorted (noise floor test, docs/07 step 3)"
+        config FAMA_AFE_INPUT_TEST
+            bool "Internal test signal (gain/polarity test, docs/07 step 4)"
+    endchoice
+    config FAMA_UDP_PORT
+        int "UDP port (commands in, stream out); discovery beacon on port+1"
+        default 5005
+endmenu

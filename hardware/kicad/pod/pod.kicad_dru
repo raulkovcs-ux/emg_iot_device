@@ -1,0 +1,3 @@
+(version 1)
+(rule "thermal spokes"
+  (constraint min_resolved_spokes 1))

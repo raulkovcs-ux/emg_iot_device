@@ -1,0 +1,9 @@
+refs,qty,value,footprint,manufacturer,mpn,desc,dnp
+J1,1,HUB,JST_GH_SM04B-GHS-TB_1x04-1MP_P1.25mm_Horizontal,JST,SM04B-GHS-TB(LF)(SN),"Cable to hub (+3V0, P, N, GND/shield)",False
+E1,1,ELEC_P,DryElectrode_D10mm,,,10 mm ENIG skin electrode (PCB pad),False
+"R1,R2",2,100k,R_0603_1608Metric,,,Patient fault-current limit,False
+E2,1,ELEC_N,DryElectrode_D10mm,,,10 mm ENIG skin electrode (PCB pad),False
+U1,1,OPA2376,VSSOP-8_3.0x3.0mm_P0.65mm,Texas Instruments,OPA2376AIDGKR,"Dual RRIO CMOS op-amp, 7.5 nV/rtHz, 0.2 pA bias",False
+"R3,R4",2,47,R_0603_1608Metric,,,,False
+C1,1,100nF,C_0603_1608Metric,,,,False
+C2,1,1uF,C_0603_1608Metric,,,,False

@@ -1,0 +1,37 @@
+** Drc report for /home/user/emg_iot_device/hardware/kicad/hub/hub.kicad_pcb **
+** Created on 2026-10-24 20:22:05 **
+
+** Found 7 DRC violations **
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(154.9400 mm, 137.0600 mm): Line on B.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; Severity: warning
+    @(166.0000 mm, 103.0000 mm): Line on Edge.Cuts
+    @(172.1500 mm, 103.8000 mm): Line on F.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; Severity: warning
+    @(166.0000 mm, 103.0000 mm): Line on Edge.Cuts
+    @(172.1500 mm, 122.2000 mm): Line on F.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; Severity: warning
+    @(163.0000 mm, 146.0000 mm): Line on Edge.Cuts
+    @(159.0000 mm, 144.9050 mm): Line on F.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; Severity: warning
+    @(163.0000 mm, 146.0000 mm): Line on Edge.Cuts
+    @(160.3000 mm, 146.1950 mm): Line on F.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; Severity: warning
+    @(163.0000 mm, 146.0000 mm): Line on Edge.Cuts
+    @(145.9000 mm, 144.6250 mm): Line on F.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; Severity: warning
+    @(163.0000 mm, 146.0000 mm): Line on Edge.Cuts
+    @(155.3000 mm, 144.6250 mm): Line on F.Silkscreen
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** End of Report **

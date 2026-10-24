@@ -1,0 +1,17 @@
+[project]
+name = "famaband"
+version = "0.1.0"
+description = "Host tools, reference DSP/model and tests for the FAMA-Band sEMG armband"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24", "scipy>=1.10"]
+
+[project.optional-dependencies]
+train = ["torch>=2.0"]
+serial = ["pyserial>=3.5"]
+test = ["pytest>=7"]
+
+[tool.setuptools]
+packages = ["famaband"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

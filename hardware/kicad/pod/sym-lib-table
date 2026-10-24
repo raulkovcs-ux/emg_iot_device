@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name "famaband")(type "KiCad")(uri "${KIPRJMOD}/../../lib/famaband.kicad_sym")(options "")(descr "FAMA-Band project symbols"))
+)
