@@ -45,9 +45,12 @@ if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     board("hub", [("top", "F.Cu,F.SilkS,F.Mask,Edge.Cuts", False), ("in2", "In2.Cu,Edge.Cuts", False),
                   ("bottom", "B.Cu,B.SilkS,Edge.Cuts", True), ("assembly_top", "F.Fab,F.CrtYd,Edge.Cuts", False)])
+    if os.path.exists(os.path.join(HW, "kicad", "hub_flex", "hub_flex.kicad_pcb")):
+        board("hub_flex", [("top", "F.Cu,F.SilkS,F.Mask,Edge.Cuts,Cmts.User", False), ("in2_lanes", "In2.Cu,In1.Cu,Edge.Cuts,Cmts.User", False),
+                           ("bottom", "B.Cu,B.SilkS,Edge.Cuts", True)], 1500)
     p = board("pod", [("top", "F.Cu,F.SilkS,Edge.Cuts", False), ("skin_side", "B.Cu,B.Mask,B.SilkS,Edge.Cuts", True)], 500)
     side_by_side(p, os.path.join(OUT, "pod_both_sides.png"))
-    for n in ("hub", "pod"):
+    for n in ("hub", "hub_flex", "pod"):
         pdf = os.path.join(HW, "docs", f"{n}_schematic.pdf")
         subprocess.run(["pdftoppm", "-r", "90", "-png", pdf, os.path.join(OUT, f"{n}_schematic")], check=True)
     print("rendered to", os.path.normpath(OUT))

@@ -31,8 +31,8 @@ def write_bom(circuit, path):
 def main():
     build_project_lib()
     ok = True
-    for mod in (hub, pod):
-        c = mod.build()
+    for build in (hub.build, lambda: hub.build("socket"), pod.build):
+        c = build()
         errs = c.erc()
         print(f"[{c.name}] {len(c.parts)} parts, {len(c.nets)} nets, ERC errors: {len(errs)}")
         for e in errs:

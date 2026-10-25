@@ -1,0 +1,56 @@
+refs,qty,value,footprint,manufacturer,mpn,desc,dnp
+J1,1,USB-C,USB_C_Receptacle_HRO_TYPE-C-31-M-12,Korean Hroparts,TYPE-C-31-M-12,"USB-C 2.0 receptacle, 16-pin",False
+"R1,R2",2,5.1k,R_0402_1005Metric,,,,False
+F1,1,0.5A,Fuse_0805_2012Metric,,,"PTC resettable fuse, 0.5 A hold, 0805",False
+U1,1,USBLC6-2SC6,SOT-23-6,STMicroelectronics,USBLC6-2SC6,USB ESD protection,False
+U2,1,MCP73831-2,SOT-23-5,Microchip,MCP73831T-2ACI/OT,"Li-Po charger, 4.20 V",False
+"R3,R18,R19,R20,R21,R22,R23,R24,R25,R26,R27,R28,R29,R30,R31,R32,R33",17,2.2k,R_0402_1005Metric,,,Ichg = 1000 V / 2.2 kOhm = 455 mA (0.75 C for 600 mAh),False
+"C1,C2",2,4.7uF,C_0603_1608Metric,,,,False
+"R4,R36,R37",3,1k,R_0402_1005Metric,,,,False
+D1,1,CHG red,LED_0603_1608Metric,Wurth,150060RS75000,Charging indicator,False
+J2,1,BATT 1S LiPo,JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal,JST,S2B-PH-SM4-TB(LF)(SN),Battery connector (check cell polarity!),False
+SW1,1,POWER,SW_SPDT_PCM12,C&K,PCM12SMTR,Main power switch (hard battery disconnect),False
+"C3,C5",2,10uF,C_0805_2012Metric,,,,False
+U3,1,TPS63001,Texas_DRC0010J_ThermalVias,Texas Instruments,TPS63001DRCR,"Buck-boost, fixed 3.3 V, 1.2 A",False
+R5,1,10,R_0402_1005Metric,,,,False
+"C4,C8,C11,C12,C14,C19,C20,C21,C22,C23,C25,C26,C28,C56,C57,C58,C60",17,100nF,C_0402_1005Metric,,,,False
+L1,1,1.5uH,L_Coilcraft_XxL4020,Coilcraft,XFL4020-152MEC,"1.5 uH, 4x4 mm, Isat 4.6 A",False
+"C6,C7,C15",3,22uF,C_0805_2012Metric,,,,False
+"R6,R8,R10,R11,R12,R13,R14,R34,R35,R40,R41,R42,R43,R44,R45,R48,R49",17,10k,R_0402_1005Metric,,,,False
+R7,1,20k,R_0402_1005Metric,,,,False
+Q1,1,2N7002,SOT-23,onsemi,2N7002,Hardware USB interlock for analog rail,False
+"R9,R50",2,100k,R_0402_1005Metric,,,,False
+FB1,1,220R@100MHz,L_0603_1608Metric,Murata,BLM18PG221SN1D,"Ferrite bead, isolates AFE LDO input",False
+"C9,C10,C16,C17,C18,C27,C54",7,1uF,C_0402_1005Metric,,,,False
+U4,1,LP5907-3.0,SOT-23-5,Texas Instruments,LP5907MFX-3.0/NOPB,Ultra-low-noise LDO 3.0 V (6.5 uVrms) for AFE + electrode buffers,False
+U5,1,LC709203F,WDFN-8-1EP_4x3mm_P0.65mm_EP2.4x1.8mm,onsemi,LC709203FQH-01TWG,"Li-ion fuel gauge, I2C 0x0B",False
+TH1,1,10k NTC (DNP),R_0402_1005Metric,Murata,NCP15XH103F03RC,Optional cell thermistor,True
+U6,1,ADS1298IPAG,TQFP-64_10x10mm_P0.5mm,Texas Instruments,ADS1298IPAG,8-ch 24-bit biopotential AFE,False
+"C13,C24,C55,C59",4,10uF,C_0603_1608Metric,,,,False
+X1,1,2.048MHz 20ppm,Oscillator_SMD_ECS_2520MV-xxx-xx-4Pin_2.5x2.0mm,SiTime,SiT8008BI-xx-33E-2.048000,"2.048 MHz CMOS oscillator, 3.3 V, +/-20 ppm (2520 package)",False
+R15,1,33,R_0402_1005Metric,,,Clock series termination,False
+R16,1,1M,R_0402_1005Metric,,,,False
+C29,1,1.5nF,C_0402_1005Metric,,,,False
+R17,1,100k,R_0603_1608Metric,,,Patient current limit: <= 30 uA even with RLDOUT shorted to a rail,False
+J3,1,BIAS,JST_GH_SM02B-GHS-TB_1x02-1MP_P1.25mm_Horizontal,JST,SM02B-GHS-TB(LF)(SN),Bias (DRL) electrode,False
+J4,1,POD1,JST_GH_SM04B-GHS-TB_1x04-1MP_P1.25mm_Horizontal,JST,SM04B-GHS-TB(LF)(SN),Electrode pod connector,False
+"C30,C31,C33,C34,C36,C37,C39,C40,C42,C43,C45,C46,C48,C49,C51,C52",16,1nF,C_0402_1005Metric,,,,False
+"C32,C35,C38,C41,C44,C47,C50,C53",8,10nF,C_0402_1005Metric,,,,False
+J5,1,POD2,JST_GH_SM04B-GHS-TB_1x04-1MP_P1.25mm_Horizontal,JST,SM04B-GHS-TB(LF)(SN),Electrode pod connector,False
+J6,1,POD3,JST_GH_SM04B-GHS-TB_1x04-1MP_P1.25mm_Horizontal,JST,SM04B-GHS-TB(LF)(SN),Electrode pod connector,False
+J7,1,POD4,JST_GH_SM04B-GHS-TB_1x04-1MP_P1.25mm_Horizontal,JST,SM04B-GHS-TB(LF)(SN),Electrode pod connector,False
+J8,1,POD5,JST_GH_SM04B-GHS-TB_1x04-1MP_P1.25mm_Horizontal,JST,SM04B-GHS-TB(LF)(SN),Electrode pod connector,False
+J9,1,POD6,JST_GH_SM04B-GHS-TB_1x04-1MP_P1.25mm_Horizontal,JST,SM04B-GHS-TB(LF)(SN),Electrode pod connector,False
+J10,1,POD7,JST_GH_SM04B-GHS-TB_1x04-1MP_P1.25mm_Horizontal,JST,SM04B-GHS-TB(LF)(SN),Electrode pod connector,False
+J11,1,POD8,JST_GH_SM04B-GHS-TB_1x04-1MP_P1.25mm_Horizontal,JST,SM04B-GHS-TB(LF)(SN),Electrode pod connector,False
+U7,1,ESP32-S3-WROOM-1-N16R8,ESP32-S3-WROOM-1,Espressif,ESP32-S3-WROOM-1-N16R8,"Wi-Fi/BLE 5 MCU module, 16 MB flash, 8 MB PSRAM",False
+SW2,1,RESET,SW_Push_1P1T_NO_CK_KMR2,C&K,KMR221GLFS,Tactile switch,False
+SW3,1,BOOT/USER,SW_Push_1P1T_NO_CK_KMR2,C&K,KMR221GLFS,Tactile switch,False
+D2,1,green,LED_0603_1608Metric,Wurth,150060GS75000,Status: recording,False
+D3,1,blue,LED_0603_1608Metric,Wurth,150060BS75000,Status: link,False
+"R38,R39",2,4.7k,R_0402_1005Metric,,,,False
+U8,1,LSM6DSL,LGA-14_3x2.5mm_P0.5mm_LayoutBorder3x4y,STMicroelectronics,LSM6DSLTR,"6-axis IMU, I2C 0x6A",False
+J12,1,microSD,microSD_HC_Hirose_DM3AT-SF-PEJM5,Hirose,DM3AT-SF-PEJM5,microSD socket with card detect,False
+J13,1,HAND,JST_GH_SM06B-GHS-TB_1x06-1MP_P1.25mm_Horizontal,JST,SM06B-GHS-TB(LF)(SN),Terminal-device interface,False
+"R46,R47",2,330,R_0402_1005Metric,,,,False
+"C61,C62",2,1uF,C_0603_1608Metric,,,,False

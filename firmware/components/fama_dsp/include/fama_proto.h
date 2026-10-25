@@ -40,7 +40,8 @@ enum {
     FB_T_CMD = 0x80,      /* host -> device: u8 cmd + args */
 };
 
-enum { FB_CMD_SESSION_START = 1, FB_CMD_SESSION_END = 2, FB_CMD_MARKER = 3, FB_CMD_SET_MODE = 4, FB_CMD_PING = 5 };
+enum { FB_CMD_SESSION_START = 1, FB_CMD_SESSION_END = 2, FB_CMD_MARKER = 3, FB_CMD_SET_MODE = 4, FB_CMD_PING = 5,
+       FB_CMD_TD_ENABLE = 6 /* u8: 1 enable hand outputs, 0 disable (socket hub) */ };
 enum { FB_MODE_STREAM = 1, FB_MODE_INFER = 2, FB_MODE_BOTH = 3 };
 
 #pragma pack(push, 1)

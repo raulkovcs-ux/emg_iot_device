@@ -186,6 +186,28 @@ void fama_pipeline_session_end(fama_pipeline_t *p);
 /* Push one 2 kSPS frame in volts. Returns 1 when a new window result is ready. */
 int fama_pipeline_push(fama_pipeline_t *p, const float v[FAMA_N_CH], fama_result_t *res);
 
+/* ------------------------------------------------------------- terminal device (prosthetic hand)
+ * Maps the per-window gesture probabilities to two proportional outputs
+ * (0..1), e.g. "open" and "close" of a hand, the way a conventional two-site
+ * myoelectric control expects them:
+ *   - an output becomes active when P(class) > on_threshold and inactive below
+ *     off_threshold (hysteresis, no chatter);
+ *   - while active, its level is (P - off) / (1 - off), smoothed by an EMA;
+ *   - both are never active together (the weaker one is suppressed);
+ *   - fama_td_stale() forces both to 0 (call it when results stop arriving). */
+typedef struct {
+    int cls[2];               /* gesture index driving output 0 / 1 */
+    float on_threshold;       /* 0.7 */
+    float off_threshold;      /* 0.5 */
+    float alpha;              /* EMA per window, 0.3 -> ~0.3 s at 100 ms windows */
+    int active[2];
+    float level[2];
+} fama_td_t;
+
+void fama_td_init(fama_td_t *td, int class_out0, int class_out1);
+void fama_td_update(fama_td_t *td, const float *probs, int n_classes, float out[2]);
+void fama_td_stale(fama_td_t *td, float out[2]);
+
 #ifdef __cplusplus
 }
 #endif

@@ -17,16 +17,17 @@ the lab PC, and runs FAMA-Net, including both online adaptation tiers,
 | Data | microSD raw log (2 kSPS) + Wi-Fi UDP or BLE 5 stream, protocol markers in the device timebase |
 | Power | 600 mAh Li-Po, ≈5.4 h (BLE) / ≈3.6 h (Wi-Fi) estimated; battery-only while worn with a hardware USB interlock |
 | Size | Hub 76 × 50 × 20 mm, pods 19 × 37 × 10.5 mm |
+| Prosthesis variant | Electrodes in a transradial socket, **rigid-flex hub** wrapped around the socket, prosthetic-hand interface (UART + 2 proportional outputs) |
 
 ## What's in the repository
 
 | Folder | Content | Status |
 |---|---|---|
 | [`docs/`](docs) | Research, specification, hardware, mechanics, firmware, safety and ethics, bring-up, wearing protocol, thesis mapping | complete |
-| [`hardware/`](hardware) | KiCad 7 projects (hub: 4 layers, pod: 2 layers), schematic PDFs, Gerbers, BOM and pick-and-place, STEP; Python generators | ERC clean, DRC: 0 errors, 0 unconnected |
-| [`mechanical/`](mechanical) | Parametric OpenSCAD enclosures, STL files, renders | ready to print |
-| [`firmware/`](firmware) | ESP-IDF v5.3 application + portable DSP/ML core (`components/fama_dsp`) | builds (Wi-Fi and BLE variants) |
-| [`host/`](host) | Python package `famaband`: reference DSP/model, PyTorch FAMA-Net + exporter, recorder, protocol runner, contact check, simulator; tests | 30 tests passing |
+| [`hardware/`](hardware) | KiCad 7 projects (hub: 4 layers, socket hub: 4-layer rigid-flex, pod: 2 layers), schematic PDFs, Gerbers, BOM and pick-and-place, STEP; Python generators | ERC clean, DRC: 0 errors, 0 unconnected |
+| [`mechanical/`](mechanical) | Parametric OpenSCAD: armband enclosures (`famaband.scad`) and transradial socket, electrode cartridges, hub carrier, forearm frame (`socket.scad`); STLs, renders | armband ready to print; socket needs a check-socket fitting |
+| [`firmware/`](firmware) | ESP-IDF v5.3 application + portable DSP/ML core (`components/fama_dsp`) | builds (Wi-Fi, BLE and socket/hand-interface variants) |
+| [`host/`](host) | Python package `famaband`: reference DSP/model, PyTorch FAMA-Net + exporter, recorder, protocol runner, contact check, simulator; tests | 35 tests passing |
 
 ## Documentation
 
@@ -39,6 +40,11 @@ the lab PC, and runs FAMA-Net, including both online adaptation tiers,
 7. [Ordering, assembly, bring-up and safety tests](docs/07_assembly_and_bringup.md)
 8. [Wearing the band and running a session](docs/08_wearing_and_session_protocol.md)
 9. [How the device closes open items of the thesis review sheet](docs/09_thesis_integration.md)
+10. [**Prosthetic socket integration and rigid-flex hub**](docs/10_prosthetic_socket.md)
+
+| Socket variant | Rigid-flex socket hub |
+|---|---|
+| ![socket](mechanical/renders/socket_assembly.png) | ![hub_flex](docs/images/hub_flex_top.png) |
 
 | Hub PCB (top) | Pod (top and skin side) |
 |---|---|

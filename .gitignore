@@ -19,3 +19,4 @@ firmware/managed_components/
 firmware/components/fama_dsp/build/
 firmware/dependencies.lock
 logs/
+firmware/build_socket/

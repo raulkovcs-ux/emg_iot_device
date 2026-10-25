@@ -67,3 +67,11 @@ int fh_pipeline_run(void *pp, const float *x, int n, int max_res, float *probs /
 void fh_pipeline_session_end(void *p) { fama_pipeline_session_end((fama_pipeline_t *)p); }
 uint32_t fh_pipeline_tb_updates(void *p) { return ((fama_pipeline_t *)p)->tb.n_updates; }
 void fh_net_set_alpha(void *net, float a) { ((fama_net_t *)net)->adapt_alpha = a; }
+
+/* Run the terminal-device mapping over n windows of probabilities [n][nc]; out [n][2]. */
+void fh_td_run(int cls0, int cls1, const float *probs, int n, int nc, float *out)
+{
+    fama_td_t td;
+    fama_td_init(&td, cls0, cls1);
+    for (int i = 0; i < n; i++) fama_td_update(&td, &probs[i * nc], nc, &out[i * 2]);
+}

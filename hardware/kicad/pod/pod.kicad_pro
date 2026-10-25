@@ -1,4 +1,8 @@
 {
+  "meta": {
+    "filename": "pod.kicad_pro",
+    "version": 1
+  },
   "board": {
     "3dviewports": [],
     "design_settings": {
@@ -170,6 +174,12 @@
     "layer_presets": [],
     "viewports": []
   },
+  "schematic": {
+    "legacy_lib_dir": "",
+    "legacy_lib_list": []
+  },
+  "sheets": [],
+  "text_variables": {},
   "boards": [],
   "cvpcb": {
     "equivalence_files": []
@@ -177,10 +187,6 @@
   "libraries": {
     "pinned_footprint_libs": [],
     "pinned_symbol_libs": []
-  },
-  "meta": {
-    "filename": "pod.kicad_pro",
-    "version": 1
   },
   "net_settings": {
     "classes": [
@@ -243,11 +249,5 @@
       "vrml": ""
     },
     "page_layout_descr_file": ""
-  },
-  "schematic": {
-    "legacy_lib_dir": "",
-    "legacy_lib_list": []
-  },
-  "sheets": [],
-  "text_variables": {}
+  }
 }

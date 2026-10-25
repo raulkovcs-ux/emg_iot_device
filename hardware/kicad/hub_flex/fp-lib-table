@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name "famaband")(type "KiCad")(uri "${KIPRJMOD}/../../lib/famaband.pretty")(options "")(descr "FAMA-Band project footprints"))
+)

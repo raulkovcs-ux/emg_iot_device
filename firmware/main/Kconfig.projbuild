@@ -24,6 +24,24 @@ menu "FAMA-Band"
         config FAMA_AFE_INPUT_TEST
             bool "Internal test signal (gain/polarity test, docs/07 step 4)"
     endchoice
+    config FAMA_BOARD_SOCKET
+        bool "Socket hub (rigid-flex board) with prosthetic-hand interface"
+        default n
+    config FAMA_TD_OPEN_CLASS
+        int "Gesture index driving hand output 1 (open)"
+        default 2
+        depends on FAMA_BOARD_SOCKET
+    config FAMA_TD_CLOSE_CLASS
+        int "Gesture index driving hand output 2 (close)"
+        default 1
+        depends on FAMA_BOARD_SOCKET
+    config FAMA_TD_ENABLE_AT_BOOT
+        bool "Enable hand outputs at power-up (otherwise only by command)"
+        default n
+        depends on FAMA_BOARD_SOCKET
+    config FAMA_RADIO_OFF
+        bool "Prosthesis mode: radio off (all-day battery; data on microSD only)"
+        default n
     config FAMA_UDP_PORT
         int "UDP port (commands in, stream out); discovery beacon on port+1"
         default 5005

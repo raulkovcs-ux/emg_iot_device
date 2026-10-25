@@ -28,7 +28,10 @@ def V(x, y):
 
 
 class Board:
-    def __init__(self, circuit, layers, width, height, corner=2.0):
+    def __init__(self, circuit, layers, width, height, corner=2.0, outline=None):
+        """outline: optional list of (x, y, fillet_radius) vertices (axis-aligned polygon,
+        clockwise in board coordinates); default is a rounded width x height rectangle."""
+        self.poly = [(x, y) for x, y, _ in outline] if outline else None
         self.c = circuit
         self.w, self.h = width, height
         self.b = pcbnew.CreateEmptyBoard()
@@ -51,7 +54,10 @@ class Board:
         # route with 0.2 mm, sign off at 0.15 mm (written to .kicad_pro): margin for router rounding
         dflt.SetClearance(mm(0.2)); dflt.SetTrackWidth(mm(0.15))
         dflt.SetViaDiameter(mm(0.45)); dflt.SetViaDrill(mm(0.2))
-        self._outline(corner)
+        if outline:
+            self._poly_outline(outline)
+        else:
+            self._outline(corner)
         for net in circuit.nets:
             n = pcbnew.NETINFO_ITEM(self.b, net)
             self.b.Add(n)
@@ -100,7 +106,43 @@ class Board:
         self._arc((w - r, r), (w - r, 0), 90); self._arc((w - r, h - r), (w, h - r), 90)
         self._arc((r, h - r), (r, h), 90); self._arc((r, r), (0, r), 90)
 
+    def _arc3(self, start, mid, end, layer=pcbnew.Edge_Cuts, width=0.1):
+        s = pcbnew.PCB_SHAPE(self.b)
+        s.SetShape(pcbnew.SHAPE_T_ARC)
+        s.SetArcGeometry(V(*start), V(*mid), V(*end))
+        s.SetLayer(layer); s.SetWidth(mm(width))
+        self.b.Add(s)
+
+    def _poly_outline(self, verts):
+        """Axis-aligned polygon with a fillet radius per vertex (0 = sharp)."""
+        n = len(verts)
+        pts = []  # (enter_point, exit_point, arc or None) per vertex
+        for i, (x, y, r) in enumerate(verts):
+            px, py, _ = verts[i - 1]
+            nx, ny, _ = verts[(i + 1) % n]
+            d1 = ((x - px) / (abs(x - px) + abs(y - py)), (y - py) / (abs(x - px) + abs(y - py)))
+            d2 = ((nx - x) / (abs(nx - x) + abs(ny - y)), (ny - y) / (abs(nx - x) + abs(ny - y)))
+            if r <= 0:
+                pts.append(((x, y), (x, y), None))
+                continue
+            a = (x - d1[0] * r, y - d1[1] * r)
+            b = (x + d2[0] * r, y + d2[1] * r)
+            c = (a[0] + d2[0] * r, a[1] + d2[1] * r)  # arc centre
+            mx, my = (a[0] + b[0]) / 2 - c[0], (a[1] + b[1]) / 2 - c[1]
+            L = math.hypot(mx, my)
+            mid = (c[0] + mx / L * r, c[1] + my / L * r)
+            pts.append((a, b, mid))
+        for i in range(n):
+            a, b, mid = pts[i]
+            if mid:
+                self._arc3(a, mid, b)
+            nxt = pts[(i + 1) % n][0]
+            if math.hypot(nxt[0] - b[0], nxt[1] - b[1]) > 1e-6:
+                self._seg(b, nxt)
+
     def outline_pts(self, inset=0.0):
+        if self.poly:
+            return list(self.poly)
         i = inset
         return [(i, i), (self.w - i, i), (self.w - i, self.h - i), (i, self.h - i)]
 
@@ -203,7 +245,8 @@ class Board:
             self.nets[n].SetNetClass(nc)
         self.netclasses[name] = dict(track=track, clearance=clearance, via=via, nets=list(nets))
 
-    def zone(self, net, layer, pts, priority=0, clearance=0.25, min_w=0.2, thermal=True, name=None, fill=True):
+    def zone(self, net, layer, pts, priority=0, clearance=0.25, min_w=0.2, thermal=True, name=None, fill=True,
+             hatch=None):
         z = pcbnew.ZONE(self.b)
         z.SetLayer(layer)
         if net:
@@ -219,6 +262,11 @@ class Board:
         z.SetThermalReliefGap(mm(0.25))
         z.SetThermalReliefSpokeWidth(mm(0.3))
         z.SetIslandRemovalMode(pcbnew.ISLAND_REMOVAL_MODE_ALWAYS)
+        if hatch:  # (line width, gap) in mm: cross-hatched plane, as used on flex sections
+            z.SetFillMode(pcbnew.ZONE_FILL_MODE_HATCH_PATTERN)
+            z.SetHatchThickness(mm(hatch[0]))
+            z.SetHatchGap(mm(hatch[1]))
+            z.SetHatchOrientation(pcbnew.EDA_ANGLE(45, pcbnew.DEGREES_T))
         if name:
             z.SetZoneName(name)
         self.b.Add(z)
@@ -229,6 +277,7 @@ class Board:
             t = pcbnew.PCB_TRACK(self.b)
             t.SetStart(V(*a)); t.SetEnd(V(*b)); t.SetWidth(mm(width)); t.SetLayer(layer)
             t.SetNet(self.nets[net])
+            t.SetLocked(True)   # pre-placed: kept by the repair pass
             self.b.Add(t)
 
     def pad_xy(self, ref, num):
@@ -241,10 +290,11 @@ class Board:
         v.SetPosition(V(x, y)); v.SetWidth(mm(dia)); v.SetDrill(mm(drill))
         v.SetViaType(pcbnew.VIATYPE_THROUGH); v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
         v.SetNet(self.nets[net])
+        v.SetLocked(True)
         self.b.Add(v)
         return v
 
-    def keepout(self, layers, pts, tracks=True, vias=True, pour=True):
+    def keepout(self, layers, pts, tracks=True, vias=True, pour=True, footprints=False, name=None):
         z = pcbnew.ZONE(self.b)
         z.SetIsRuleArea(True)
         ls = pcbnew.LSET()
@@ -252,11 +302,32 @@ class Board:
             ls.AddLayer(l)
         z.SetLayerSet(ls)
         z.SetDoNotAllowTracks(tracks); z.SetDoNotAllowVias(vias); z.SetDoNotAllowCopperPour(pour)
-        z.SetDoNotAllowPads(False); z.SetDoNotAllowFootprints(False)
+        z.SetDoNotAllowPads(footprints); z.SetDoNotAllowFootprints(footprints)
+        if name:
+            z.SetZoneName(name)
         o = z.Outline(); o.NewOutline()
         for x, y in pts:
             o.Append(mm(ORIGIN[0] + x), mm(ORIGIN[1] + y))
         self.b.Add(z)
+        return z
+
+    def remove_lane_duplicates(self):
+        """Delete unlocked tracks that duplicate a locked (pre-routed) segment, as echoed back
+        by the router with slightly different coordinates. Returns the number removed."""
+        locked = [t for t in self.b.GetTracks() if t.IsLocked() and t.Type() != pcbnew.PCB_VIA_T]
+        removed = 0
+        for t in list(self.b.GetTracks()):
+            if t.IsLocked() or t.Type() == pcbnew.PCB_VIA_T:
+                continue
+            for L in locked:
+                if L.GetLayer() != t.GetLayer() or L.GetNetCode() != t.GetNetCode():
+                    continue
+                if all(_seg_dist(p.x, p.y, L.GetStart().x, L.GetStart().y, L.GetEnd().x, L.GetEnd().y) < 20000
+                       for p in (t.GetStart(), t.GetEnd())):
+                    self.b.Remove(t)
+                    removed += 1
+                    break
+        return removed
 
     def fill(self):
         filler = pcbnew.ZONE_FILLER(self.b)
@@ -272,6 +343,12 @@ class Board:
         for fp in self.b.GetFootprints():
             for p in fp.Pads():
                 blockers.append((p.GetBoundingBox(), p.GetNetCode(), p))
+        existing_vias, existing_segs = [], []
+        for t in self.b.GetTracks():
+            if t.Type() == pcbnew.PCB_VIA_T:
+                existing_vias.append((t.GetPosition().x, t.GetPosition().y, t.GetWidth() / 2, t.GetNetCode()))
+            else:
+                existing_segs.append((t.GetStart().x, t.GetStart().y, t.GetEnd().x, t.GetEnd().y, t.GetWidth() / 2, t.GetNetCode()))
         rule_areas = [z for fp in self.b.GetFootprints() for z in fp.Zones() if z.GetIsRuleArea() and z.GetDoNotAllowVias()]
         rule_areas += [z for z in self.b.Zones() if z.GetIsRuleArea() and z.GetDoNotAllowVias()]
         vias = []
@@ -296,6 +373,17 @@ class Board:
             for vx, vy in vias:
                 if math.hypot(vx - x, vy - y) < mm(via[0] + clearance):
                     return False
+            for vx, vy, vr, code in existing_vias:
+                if code != ni.GetNetCode() and math.hypot(vx - x, vy - y) < vr + r + mm(clearance):
+                    return False
+            for ax, ay, bx, by, w2, code in existing_segs:
+                if code != ni.GetNetCode():
+                    if _seg_dist(x, y, ax, ay, bx, by) < w2 + r + mm(clearance):
+                        return False
+                    fx, fy = seg_from
+                    for k in range(1, 8):
+                        if _seg_dist(fx + (x - fx) * k / 8, fy + (y - fy) * k / 8, ax, ay, bx, by) < w2 + mm(clearance + track / 2):
+                            return False
             for bb, code, p in blockers:
                 if p is own_pad:
                     continue
@@ -338,12 +426,14 @@ class Board:
                             v.SetWidth(mm(via[0])); v.SetDrill(mm(via[1]))
                             v.SetViaType(pcbnew.VIATYPE_THROUGH); v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
                             v.SetNet(ni)
+                            v.SetLocked(True)
                             self.b.Add(v)
                             t = pcbnew.PCB_TRACK(self.b)
                             t.SetStart(pc); t.SetEnd(pcbnew.VECTOR2I(int(x), int(y)))
                             t.SetWidth(mm(track) if min(p.GetSize().x, p.GetSize().y) >= mm(0.4) else mm(0.2))
                             t.SetLayer(pcbnew.F_Cu if p.IsOnLayer(pcbnew.F_Cu) else pcbnew.B_Cu)
                             t.SetNet(ni)
+                            t.SetLocked(True)
                             self.b.Add(t)
                             vias.append((x, y))
                             blockers.append((v.GetBoundingBox(), ni.GetNetCode(), v))
@@ -405,6 +495,11 @@ class Board:
         # via padstacks in the session/DSN: "Via[0-3]_450:200_um"
         n_tracks = n_vias = 0
         existing = [(v.GetPosition().x, v.GetPosition().y) for v in self.b.GetTracks() if v.Type() == pcbnew.PCB_VIA_T]
+        seg_keys = set()
+        for t in self.b.GetTracks():
+            if t.Type() != pcbnew.PCB_VIA_T:
+                a, b = (t.GetStart().x // 5000, t.GetStart().y // 5000), (t.GetEnd().x // 5000, t.GetEnd().y // 5000)
+                seg_keys.add((t.GetLayer(), min(a, b), max(a, b)))
         for net in find_all(find(routes, "network_out"), "net"):
             name = net[1]
             ni = self.nets.get(name)
@@ -417,6 +512,9 @@ class Board:
                 coords = [float(v) * to_mm for v in path[3:]]
                 pts = [(coords[i], -coords[i + 1]) for i in range(0, len(coords), 2)]
                 for a, b in zip(pts, pts[1:]):
+                    ka, kb = (mm(a[0]) // 5000, mm(a[1]) // 5000), (mm(b[0]) // 5000, mm(b[1]) // 5000)
+                    if (layer, min(ka, kb), max(ka, kb)) in seg_keys:
+                        continue  # our own pre-placed segment echoed back
                     t = pcbnew.PCB_TRACK(self.b)
                     t.SetStart(pcbnew.VECTOR2I(mm(a[0]), mm(a[1])))
                     t.SetEnd(pcbnew.VECTOR2I(mm(b[0]), mm(b[1])))
@@ -536,7 +634,9 @@ def stitch(board, net="GND", pitch=2.5, via=(0.45, 0.2), clearance=0.3, edge_mar
                     if _seg_dist(x, y, it[1], it[2], it[3], it[4]) < it[5] + r + cl:
                         ok = False
                 elif k == "area":
-                    if it[1].Outline().Contains(pcbnew.VECTOR2I(int(x), int(y))):
+                    m = int(r + cl)
+                    if any(it[1].Outline().Contains(pcbnew.VECTOR2I(int(x) + dx, int(y) + dy))
+                           for dx, dy in ((0, 0), (m, 0), (-m, 0), (0, m), (0, -m))):
                         ok = False
                 if not ok:
                     break
@@ -552,6 +652,65 @@ def stitch(board, net="GND", pitch=2.5, via=(0.45, 0.2), clearance=0.3, edge_mar
             x += step
         y += step
     return added
+
+
+def trim_lanes(board, layer=pcbnew.In2_Cu):
+    """Shorten each locked straight lane to its outermost junctions (router track ends or vias
+    of the same net touching it), so no lane stub dangles. Junctions are on rigid copper
+    because the router is barred from the hinges. Returns the number of lanes trimmed."""
+    trimmed = 0
+    tracks = list(board.GetTracks())
+    for L in tracks:
+        if not L.IsLocked() or L.Type() == pcbnew.PCB_VIA_T or L.GetLayer() != layer:
+            continue
+        a, c = L.GetStart(), L.GetEnd()
+        if abs(a.y - c.y) > 1000:
+            continue
+        y, x0, x1 = a.y, min(a.x, c.x), max(a.x, c.x)
+        tol = L.GetWidth() // 2 + 1000
+        xs = []
+        for o in tracks:
+            if o is L or o.GetNetCode() != L.GetNetCode():
+                continue
+            if o.Type() == pcbnew.PCB_VIA_T:
+                pts = [o.GetPosition()]
+            elif o.GetLayer() == layer:
+                pts = [o.GetStart(), o.GetEnd()]
+            else:
+                continue
+            xs += [p.x for p in pts if abs(p.y - y) <= tol and x0 - tol <= p.x <= x1 + tol]
+        if len(xs) < 2:
+            continue
+        n0, n1 = max(x0, min(xs)), min(x1, max(xs))
+        if (n0, n1) != (x0, x1):
+            L.SetStart(pcbnew.VECTOR2I(n0, y)); L.SetEnd(pcbnew.VECTOR2I(n1, y))
+            trimmed += 1
+    return trimmed
+
+
+def remove_dangling_stubs(board, net="GND", max_len_mm=1.0):
+    """Remove short unlocked tracks of `net` with an end that touches nothing (router debris)."""
+    removed = 0
+    items = list(board.GetTracks())
+    pads = [p for fp in board.GetFootprints() for p in fp.Pads()]
+    for t in items:
+        if t.IsLocked() or t.Type() == pcbnew.PCB_VIA_T or t.GetNetname() != net or t.GetLength() > mm(max_len_mm):
+            continue
+        def touched(pt):
+            for o in items:
+                if o is t or o.GetNetCode() != t.GetNetCode():
+                    continue
+                if o.Type() == pcbnew.PCB_VIA_T:
+                    if math.hypot(o.GetPosition().x - pt.x, o.GetPosition().y - pt.y) <= o.GetWidth() / 2:
+                        return True
+                elif o.IsOnLayer(t.GetLayer()) and _seg_dist(pt.x, pt.y, o.GetStart().x, o.GetStart().y,
+                                                              o.GetEnd().x, o.GetEnd().y) <= o.GetWidth() / 2:
+                    return True
+            return any(p.GetNetCode() == t.GetNetCode() and p.IsOnLayer(t.GetLayer()) and p.HitTest(pt) for p in pads)
+        if not (touched(t.GetStart()) and touched(t.GetEnd())):
+            board.Remove(t)
+            removed += 1
+    return removed
 
 
 def unconnected_nets(rpt_path):
@@ -579,7 +738,8 @@ def reroute_saved(pcb_path, workdir, passes=60):
     if not os.path.exists(ses):
         raise RuntimeError("repair pass produced no session")
     for t in list(b.GetTracks()):
-        b.Remove(t)
+        if not t.IsLocked():   # keep pre-placed lanes, bridges and fan-out vias
+            b.Remove(t)
     shim = Board.__new__(Board)
     shim.b = b
     shim.nets = {ni.GetNetname(): ni for ni in b.GetNetsByNetcode().values()}
@@ -625,5 +785,8 @@ def export_fab(pcb_path, outdir, layers):
     stem = os.path.splitext(os.path.basename(pcb_path))[0]
     run("pos", "--side", "both", "--format", "csv", "--units", "mm", "-o", os.path.join(outdir, f"{stem}_cpl.csv"), pcb_path)
     run("step", "--subst-models", "--force", "-o", os.path.join(outdir, f"{stem}.step"), pcb_path)
+    # fabrication drawing: outline, flex regions and stack-up note (Cmts.User), assembly (Fab)
+    run("pdf", "--layers", "Edge.Cuts,Cmts.User,F.Fab", "--include-border-title", "-o",
+        os.path.join(outdir, f"{stem}_fab_drawing.pdf"), pcb_path)
     import shutil
     shutil.make_archive(os.path.join(outdir, f"{stem}_gerbers"), "zip", gdir)

@@ -2,7 +2,7 @@
 #   make -f Makefile.host            -> build/libfama_dsp.so
 CC ?= gcc
 CFLAGS ?= -O2 -std=c11 -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wno-sign-conversion -Wdouble-promotion -fPIC -D_DEFAULT_SOURCE
-SRC := src/dsp.c src/fama_net.c src/tier_b.c src/pipeline.c src/proto.c src/host_api.c
+SRC := src/dsp.c src/fama_net.c src/tier_b.c src/pipeline.c src/proto.c src/td_map.c src/host_api.c
 
 build/libfama_dsp.so: $(SRC) include/fama_dsp.h include/fama_coeffs.h include/fama_proto.h
 	mkdir -p build

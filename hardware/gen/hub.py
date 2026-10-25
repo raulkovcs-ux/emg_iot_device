@@ -8,8 +8,12 @@ from circuit import FP, Circuit
 N_CH = 8
 
 
-def build():
-    c = Circuit("hub", "FAMA-Band hub", [
+def build(variant="band"):
+    """variant "band": armband hub (rigid 66 x 46 mm board).
+    variant "socket": prosthetic-socket hub (rigid-flex) = same circuit + terminal-device interface."""
+    socket = variant == "socket"
+    name, title = ("hub_flex", "FAMA-Band socket hub (rigid-flex)") if socket else ("hub", "FAMA-Band hub")
+    c = Circuit(name, title, [
         ("power", "Power: USB-C, charger, battery, 3V3 buck-boost, AFE supply + USB interlock"),
         ("afe", "Analog front end: ADS1298, 2.048 MHz clock, input filters, electrode connectors"),
         ("mcu", "MCU: ESP32-S3 module, IMU, microSD, buttons, LEDs"),
@@ -193,7 +197,10 @@ def build():
             "IO1": "SD_DET", "IO0": "BOOT"}
     for pin, net in gpio.items():
         c.connect(net, m[pin])
-    c.nc(m, "IO3", "IO8", "IO16", "IO45", "IO46", "IO35", "IO36", "IO37", "TXD0", "RXD0")
+    if socket:
+        c.nc(m, "IO3", "IO45", "IO46", "IO35", "IO36", "IO37")
+    else:
+        c.nc(m, "IO3", "IO8", "IO16", "IO45", "IO46", "IO35", "IO36", "IO37", "TXD0", "RXD0")
     c.newrow()
     c.C("10uF", "+3V3", "GND", "0603"); c.C("100nF", "+3V3", "GND")
 
@@ -225,8 +232,36 @@ def build():
     for net in ("SD_CMD", "SD_D0", "SD_D1", "SD_D2", "SD_D3", "SD_DET"):
         c.R("10k", "+3V3", net)
     c.C("10uF", "+3V3", "GND", "0603"); c.C("100nF", "+3V3", "GND")
+    if socket:
+        terminal_device_interface(c, m)
     c.flag("GND")
     return c
+
+
+def terminal_device_interface(c, m):
+    """Connector to the prosthetic hand / wrist controller (socket variant only).
+
+    UART0 (GPIO43/44) carries FAMA-Net result packets; GPIO16/GPIO8 are LEDC PWM
+    outputs, filtered to 0-3.3 V proportional signals (like conventional
+    two-site myo electrode outputs). 330 R series resistors protect the pins.
+    The interface is referenced to the hub ground; the hand must be powered from
+    its own battery, never from mains while worn.
+    """
+    c.newrow()
+    c.note("Terminal-device (prosthetic hand) interface: UART 115200 8N1 result packets + two\n"
+           "filtered PWM proportional outputs (fc = 16 Hz). Outputs are disabled until the\n"
+           "prosthetist enables them (firmware TD mode). Hand powered from its own battery.")
+    j = c.part("J", "Connector_Generic:Conn_01x06", "HAND", "Connector_JST:JST_GH_SM06B-GHS-TB_1x06-1MP_P1.25mm_Horizontal",
+               mpn="SM06B-GHS-TB(LF)(SN)", manufacturer="JST", desc="Terminal-device interface")
+    c.connect("TD_TX_PIN", m["TXD0"]); c.connect("TD_RX_PIN", m["RXD0"])
+    c.R("330", "TD_TX_PIN", "TD_TX"); c.R("330", "TD_RX", "TD_RX_PIN")
+    c.connect("TD_PWM1", m["IO16"]); c.connect("TD_PWM2", m["IO8"])
+    for k in (1, 2):
+        c.R("10k", f"TD_PWM{k}", f"TD_AN{k}")
+        c.C("1uF", f"TD_AN{k}", "GND", "0603")
+    for net, pin in (("+3V3", "1"), ("TD_TX", "2"), ("TD_RX", "3"), ("TD_AN1", "4"), ("TD_AN2", "5"), ("GND", "6")):
+        c.connect(net, j[pin])
+    c.R("100k", "TD_RX", "+3V3")  # idle-high when nothing is connected
 
 
 if __name__ == "__main__":

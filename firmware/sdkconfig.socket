@@ -1,0 +1,2 @@
+# Socket hub (rigid-flex): hand interface; console stays on USB-Serial-JTAG so UART0 is free
+CONFIG_FAMA_BOARD_SOCKET=y

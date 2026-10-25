@@ -258,10 +258,15 @@ def write_project(circuit, outdir):
                            ["at", 30, 35, 0], eff(3, "left bottom"), ["uuid", uid(name, "roottitle")]])
         root.write(os.path.join(outdir, f"{name}.kicad_sch"), root=True, sheets=sheet_nodes)
     # project + library tables
-    with open(os.path.join(outdir, f"{name}.kicad_pro"), "w") as f:
-        json.dump({"meta": {"filename": f"{name}.kicad_pro", "version": 1},
-                   "board": {"design_settings": {}}, "schematic": {"legacy_lib_dir": "", "legacy_lib_list": []},
-                   "sheets": [], "text_variables": {}}, f, indent=2)
+    pro = os.path.join(outdir, f"{name}.kicad_pro")
+    data = {"meta": {"filename": f"{name}.kicad_pro", "version": 1},
+            "board": {"design_settings": {}}, "schematic": {"legacy_lib_dir": "", "legacy_lib_list": []},
+            "sheets": [], "text_variables": {}}
+    if os.path.exists(pro):  # keep settings written by the PCB build (net classes, sign-off clearances)
+        with open(pro) as f:
+            data.update({k: v for k, v in json.load(f).items() if k not in ("meta",)})
+    with open(pro, "w") as f:
+        json.dump(data, f, indent=2)
     with open(os.path.join(outdir, "sym-lib-table"), "w") as f:
         f.write('(sym_lib_table\n  (lib (name "famaband")(type "KiCad")(uri "${KIPRJMOD}/../../lib/famaband.kicad_sym")(options "")(descr "FAMA-Band project symbols"))\n)\n')
     with open(os.path.join(outdir, "fp-lib-table"), "w") as f:

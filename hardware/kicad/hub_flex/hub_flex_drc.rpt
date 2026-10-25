@@ -1,0 +1,40 @@
+** Drc report for hardware/kicad/hub_flex/hub_flex.kicad_pcb **
+** Created on 2026-10-25 08:47:04 **
+
+** Found 8 DRC violations **
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(118.0000 mm, 144.6000 mm): PCB Text 'FAMA-Band socket hub rev A' on B.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; Severity: warning
+    @(143.0000 mm, 100.0000 mm): Line on Edge.Cuts
+    @(145.8000 mm, 93.8500 mm): Line on F.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; Severity: warning
+    @(143.0000 mm, 100.0000 mm): Line on Edge.Cuts
+    @(164.2000 mm, 93.8500 mm): Line on F.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; Severity: warning
+    @(209.0000 mm, 102.0000 mm): Line on Edge.Cuts
+    @(207.9050 mm, 111.4000 mm): Line on F.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; Severity: warning
+    @(209.0000 mm, 102.0000 mm): Line on Edge.Cuts
+    @(209.1950 mm, 110.1000 mm): Line on F.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; Severity: warning
+    @(207.0000 mm, 146.0000 mm): Line on Edge.Cuts
+    @(179.3000 mm, 144.6250 mm): Line on F.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; Severity: warning
+    @(207.0000 mm, 146.0000 mm): Line on Edge.Cuts
+    @(188.7000 mm, 144.6250 mm): Line on F.Silkscreen
+[track_dangling]: Track has unconnected end
+    Local override; Severity: warning
+    @(152.4755 mm, 131.0160 mm): Track [GND] on F.Cu, length 0.1280 mm
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** End of Report **

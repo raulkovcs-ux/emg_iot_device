@@ -33,6 +33,9 @@
 #include "power.h"
 #include "ring.h"
 #include "storage.h"
+#if CONFIG_FAMA_BOARD_SOCKET
+#include "td.h"
+#endif
 
 static const char *TAG = "fama";
 #define FW_VERSION "0.1.0"
@@ -150,6 +153,11 @@ static void on_cmd(const uint8_t *p, size_t len)
     case FB_CMD_MARKER:
         if (len >= 3) post(FB_T_MARKER, frame1k(), (uint16_t)(len - 3), p + 1, (uint16_t)(len - 1), true, true);
         break;
+#if CONFIG_FAMA_BOARD_SOCKET
+    case FB_CMD_TD_ENABLE:
+        if (len >= 2) td_enable(p[1] != 0);
+        break;
+#endif
     case FB_CMD_SET_MODE:
         if (len >= 2) atomic_store(&s_mode, p[1]);
         break;
@@ -203,6 +211,9 @@ static void dsp_task(void *arg)
         for (int i = 0; i < r.n_classes && i < 16; i++) res.probs[i] = (uint8_t)lrintf(r.probs[i] * 255.0f);
         uint32_t mode = atomic_load(&s_mode);
         post(FB_T_RESULT, frame1k(), 1, &res, sizeof(res), atomic_load(&s_session), mode & FB_MODE_INFER);
+#if CONFIG_FAMA_BOARD_SOCKET
+        if (r.gesture >= 0) td_on_result(&res, r.probs, r.n_classes);
+#endif
         if (r.tierb_updated) ESP_LOGI(TAG, "Tier B update #%" PRIu32 " at window %" PRIu32, s_pipe->tb.n_updates, r.window_index);
     }
 }
@@ -364,7 +375,14 @@ void app_main(void)
     fama_tierb_cfg_t tb;
     fama_tierb_default_cfg(&tb);
     fama_pipeline_init(s_pipe, s_net, &tb);
+#if CONFIG_FAMA_BOARD_SOCKET
+    td_init();
+#endif
+#if CONFIG_FAMA_RADIO_OFF
+    ESP_LOGI(TAG, "prosthesis mode: radio off, logging to microSD only");
+#else
     link_init(on_cmd);
+#endif
 
     xTaskCreatePinnedToCore(acq_task, "acq", 4096, NULL, 20, NULL, 1);
     xTaskCreatePinnedToCore(dsp_task, "dsp", 8192, NULL, 10, NULL, 1);
